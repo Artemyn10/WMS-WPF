@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="WMS.Views.StockMovementHistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="История операций" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+
+            <TextBlock Text="Товар:" VerticalAlignment="Center" Margin="24,0,0,0"/>
+            <TextBox Width="200" Margin="8,0,0,0" Padding="4"
+                     Text="{Binding ProductSearch, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalAlignment="Center"/>
+
+            <TextBlock Text="Операция:" VerticalAlignment="Center" Margin="16,0,0,0"/>
+            <ComboBox Width="160" Margin="8,0,0,0" Padding="4"
+                      ItemsSource="{Binding OperationTypeOptions}"
+                      SelectedItem="{Binding SelectedOperationType}"
+                      VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Movements}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" Width="150"/>
+                <DataGridTextColumn Header="Операция" Binding="{Binding OperationTypeDisplay}" Width="130"/>
+                <DataGridTextColumn Header="Товар" Binding="{Binding ProductName}" Width="*"/>
+                <DataGridTextColumn Header="Количество" Binding="{Binding Quantity}" Width="100"/>
+                <DataGridTextColumn Header="Откуда" Binding="{Binding FromLocationCode}" Width="100"/>
+                <DataGridTextColumn Header="Куда" Binding="{Binding ToLocationCode}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

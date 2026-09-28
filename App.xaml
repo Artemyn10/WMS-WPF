@@ -1,7 +1,48 @@
 ﻿<Application x:Class="WMS.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:WMS.ViewModels"
+             xmlns:views="clr-namespace:WMS.Views"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
+        <DataTemplate DataType="{x:Type vm:PlaceholderViewModel}">
+            <views:PlaceholderView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProductsViewModel}">
+            <views:ProductsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CategoriesViewModel}">
+            <views:CategoriesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WarehousesViewModel}">
+            <views:WarehousesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StorageLocationsViewModel}">
+            <views:StorageLocationsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:InventoryViewModel}">
+            <views:InventoryView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReceiptsViewModel}">
+            <views:ReceiptsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlacementViewModel}">
+            <views:PlacementView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MovementViewModel}">
+            <views:MovementView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OrdersViewModel}">
+            <views:OrdersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PickingViewModel}">
+            <views:PickingView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ShipmentViewModel}">
+            <views:ShipmentView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StockMovementHistoryViewModel}">
+            <views:StockMovementHistoryView/>
+        </DataTemplate>
     </Application.Resources>
 </Application>

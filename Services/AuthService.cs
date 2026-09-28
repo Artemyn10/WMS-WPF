@@ -7,11 +7,11 @@ namespace WMS.Services;
 
 public class AuthService
 {
-    private readonly WmsDbContext _context;
+    private readonly IDbContextFactory<WmsDbContext> _contextFactory;
 
-    public AuthService(WmsDbContext context)
+    public AuthService(IDbContextFactory<WmsDbContext> contextFactory)
     {
-        _context = context;
+        _contextFactory = contextFactory;
     }
 
     public async Task<AuthResult> SignInAsync(string login, string password)
@@ -21,7 +21,8 @@ public class AuthService
             return AuthResult.Fail("Введите логин и пароль.");
         }
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Login == login);
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Login == login);
 
         if (user == null || !PasswordHasher.Verify(password, user.PasswordHash))
         {

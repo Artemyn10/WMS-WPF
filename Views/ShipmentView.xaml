@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="WMS.Views.ShipmentView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Отгрузка" FontSize="20" FontWeight="Bold"/>
+
+        <TextBlock Grid.Row="0" Text="Нет заказов, готовых к отгрузке."
+                   FontSize="14" Foreground="Gray" HorizontalAlignment="Right"
+                   Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding PendingOrders}"
+                  SelectedItem="{Binding SelectedOrder}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Номер" Binding="{Binding OrderNumber}" Width="90"/>
+                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=dd.MM.yyyy}" Width="100"/>
+                <DataGridTextColumn Header="Клиент" Binding="{Binding Customer.Name}" Width="*"/>
+                <DataGridTextColumn Header="Склад" Binding="{Binding Warehouse.Name}" Width="150"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+            <Button Content="Оформить отгрузку" Padding="16,6" Command="{Binding ShipCommand}"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap" Margin="200,8,0,0"/>
+        <TextBlock Grid.Row="3" Text="{Binding SuccessMessage}" Foreground="Green" TextWrapping="Wrap" Margin="200,8,0,0"/>
+
+        <TextBlock Grid.Row="5" Text="История отгрузок" FontWeight="Bold"/>
+
+        <DataGrid Grid.Row="6" ItemsSource="{Binding Shipments}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Заказ" Binding="{Binding Order.OrderNumber}" Width="90"/>
+                <DataGridTextColumn Header="Дата отгрузки" Binding="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" Width="150"/>
+                <DataGridTextColumn Header="Клиент" Binding="{Binding Order.Customer.Name}" Width="*"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

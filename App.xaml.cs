@@ -24,13 +24,57 @@ public partial class App : Application
             {
                 var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
 
-                services.AddDbContext<WmsDbContext>(options =>
+                services.AddDbContextFactory<WmsDbContext>(options =>
                     options.UseNpgsql(connectionString));
 
                 services.AddTransient<Services.AuthService>();
                 services.AddTransient<ViewModels.LoginViewModel>();
                 services.AddTransient<Views.LoginWindow>();
                 services.AddTransient<MainWindow>();
+                services.AddSingleton<Services.NavigationService>();
+                services.AddTransient<ViewModels.MainViewModel>();
+                services.AddTransient<Services.ProductService>();
+                services.AddTransient<Services.CategoryService>();
+
+                services.AddTransient<ViewModels.ProductsViewModel>();
+                services.AddTransient<ViewModels.CategoriesViewModel>();
+                services.AddTransient<ViewModels.ProductEditViewModel>();
+                services.AddTransient<ViewModels.CategoryEditViewModel>();
+
+                services.AddTransient<Views.ProductEditWindow>();
+                services.AddTransient<Views.CategoryEditWindow>();
+                services.AddTransient<Services.WarehouseService>();
+                services.AddTransient<Services.StorageLocationService>();
+
+                services.AddTransient<ViewModels.WarehousesViewModel>();
+                services.AddTransient<ViewModels.StorageLocationsViewModel>();
+                services.AddTransient<ViewModels.WarehouseEditViewModel>();
+                services.AddTransient<ViewModels.StorageLocationEditViewModel>();
+
+                services.AddTransient<Views.WarehouseEditWindow>();
+                services.AddTransient<Views.StorageLocationEditWindow>();
+                services.AddTransient<Services.InventoryService>();
+                services.AddTransient<ViewModels.InventoryViewModel>();
+                services.AddTransient<Services.ReceiptService>();
+                services.AddTransient<ViewModels.ReceiptsViewModel>();
+                services.AddTransient<ViewModels.ReceiptEditViewModel>();
+                services.AddTransient<Views.ReceiptEditWindow>();
+                services.AddTransient<Services.SupplierService>();
+                services.AddTransient<Services.PlacementService>();
+                services.AddTransient<ViewModels.PlacementViewModel>();
+                services.AddTransient<Services.MovementService>();
+                services.AddTransient<ViewModels.MovementViewModel>();
+                services.AddTransient<Services.CustomerService>();
+                services.AddTransient<Services.OrderService>();
+                services.AddTransient<ViewModels.OrdersViewModel>();
+                services.AddTransient<ViewModels.OrderEditViewModel>();
+                services.AddTransient<Views.OrderEditWindow>();
+                services.AddTransient<Services.PickingService>();
+                services.AddTransient<ViewModels.PickingViewModel>();
+                services.AddTransient<Services.ShipmentService>();
+                services.AddTransient<ViewModels.ShipmentViewModel>();
+                services.AddTransient<Services.StockMovementService>();
+                services.AddTransient<ViewModels.StockMovementHistoryViewModel>();
             })
             .Build();
     }
@@ -39,9 +83,9 @@ public partial class App : Application
     {
         await AppHost.StartAsync();
 
-        using (var scope = AppHost.Services.CreateScope())
+        var contextFactory = AppHost.Services.GetRequiredService<IDbContextFactory<Data.WmsDbContext>>();
+        await using (var dbContext = await contextFactory.CreateDbContextAsync())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<Data.WmsDbContext>();
             dbContext.Database.Migrate();
             Data.DbSeeder.Seed(dbContext);
         }
@@ -58,8 +102,6 @@ public partial class App : Application
         var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
-        // Теперь, когда MainWindow открыт, разрешаем стандартному поведению
-        // завершать приложение при его закрытии
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         MainWindow = mainWindow;
 

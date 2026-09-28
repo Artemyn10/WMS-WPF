@@ -7,12 +7,23 @@ public static class DbSeeder
 {
     public static void Seed(WmsDbContext context)
     {
-        // Если пользователи уже есть - считаем, что база уже наполнена, и ничего не делаем
-        if (context.Users.Any())
+        // Если пользователей ещё нет - создаём все справочники и пользователей
+        var usersExist = context.Users.Any();
+        if (!usersExist)
         {
-            return;
+            SeedCoreData(context);
         }
 
+        // Отдельно проверяем остатки - на случай, если в прошлый раз
+        // сидер прервался после справочников, но до создания приёмки/остатков
+        if (!context.Inventories.Any())
+        {
+            SeedDemoOperations(context);
+        }
+    }
+
+    private static void SeedCoreData(WmsDbContext context)
+    {
         // --- Пользователи ---
         var admin = new User
         {
@@ -103,49 +114,58 @@ public static class DbSeeder
         };
         context.Products.AddRange(products);
 
-        // Сохраняем справочники, чтобы получить их Id для дальнейших связей
         context.SaveChanges();
+    }
 
-        // --- Тестовая операция: приёмка ---
+    private static void SeedDemoOperations(WmsDbContext context)
+    {
+        var warehouse = context.Warehouses.First();
+        var location1 = context.StorageLocations.OrderBy(l => l.Code).First();
+        var location2 = context.StorageLocations.OrderBy(l => l.Code).Skip(1).First();
+        var supplier = context.Suppliers.First();
+        var product1 = context.Products.First(p => p.Article == "ART-0001");
+        var product2 = context.Products.First(p => p.Article == "ART-0003");
+
+        // --- Тестовая операция: приёмка (уже размещённая) ---
         var receipt = new Receipt
         {
-            Supplier = suppliers[0],
+            Supplier = supplier,
             Warehouse = warehouse,
             DocumentNumber = "REC-0001",
-            Date = DateTime.Now,
+            Date = DateTime.UtcNow,
             Status = ReceiptStatus.Confirmed,
             Items = new List<ReceiptItem>
-            {
-                new() { Product = products[0], Quantity = 20 }, // Ноутбук Lenovo - 20 шт
-                new() { Product = products[2], Quantity = 50 }  // Мышь Logitech - 50 шт
-            }
+        {
+            new() { Product = product1, Quantity = 20, PlacedQuantity = 20 },
+            new() { Product = product2, Quantity = 50, PlacedQuantity = 50 }
+        }
         };
         context.Receipts.Add(receipt);
 
         // --- Тестовое размещение: остатки в ячейках ---
-        var inventory1 = new Inventory { Product = products[0], StorageLocation = locations[0], Quantity = 20 }; // A-01-01
-        var inventory2 = new Inventory { Product = products[2], StorageLocation = locations[1], Quantity = 50 }; // A-01-02
+        var inventory1 = new Inventory { Product = product1, StorageLocation = location1, Quantity = 20 };
+        var inventory2 = new Inventory { Product = product2, StorageLocation = location2, Quantity = 50 };
         context.Inventories.AddRange(inventory1, inventory2);
 
         // --- История движения для этой приёмки и размещения ---
         context.StockMovements.AddRange(
             new StockMovement
             {
-                Product = products[0],
+                Product = product1,
                 FromLocation = null,
-                ToLocation = locations[0],
+                ToLocation = location1,
                 Quantity = 20,
                 OperationType = OperationType.Receipt,
-                Date = DateTime.Now
+                Date = DateTime.UtcNow
             },
             new StockMovement
             {
-                Product = products[2],
+                Product = product2,
                 FromLocation = null,
-                ToLocation = locations[1],
+                ToLocation = location2,
                 Quantity = 50,
                 OperationType = OperationType.Receipt,
-                Date = DateTime.Now
+                Date = DateTime.UtcNow
             }
         );
 

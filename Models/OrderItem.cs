@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WMS.Models;
+﻿namespace WMS.Models;
 
 public class OrderItem
 {
@@ -12,6 +6,9 @@ public class OrderItem
     public int OrderId { get; set; }
     public int ProductId { get; set; }
     public int Quantity { get; set; }
+
+    // Сколько единиц из этой строки уже собрано (списано с ячеек)
+    public int PickedQuantity { get; set; }
 
     public Order? Order { get; set; }
     public Product? Product { get; set; }
