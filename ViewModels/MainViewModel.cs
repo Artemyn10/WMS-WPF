@@ -46,11 +46,11 @@ public class MainViewModel : ViewModelBase
     {
         var isAdmin = CurrentSession.IsAdministrator;
 
-        AddMenuItem("Главная", adminOnly: false, () => new PlaceholderViewModel("Главная"));
+        AddMenuItem("Главная", adminOnly: false, () => _serviceProvider.GetRequiredService<DashboardViewModel>());
         AddMenuItem("Товары", adminOnly: false, () => _serviceProvider.GetRequiredService<ProductsViewModel>());
         AddMenuItem("Категории", adminOnly: true, () => _serviceProvider.GetRequiredService<CategoriesViewModel>());
-        AddMenuItem("Поставщики", adminOnly: true, () => new PlaceholderViewModel("Поставщики"));
-        AddMenuItem("Клиенты", adminOnly: true, () => new PlaceholderViewModel("Клиенты"));
+        AddMenuItem("Поставщики", adminOnly: true, () => _serviceProvider.GetRequiredService<SuppliersViewModel>());
+        AddMenuItem("Клиенты", adminOnly: true, () => _serviceProvider.GetRequiredService<CustomersViewModel>());
         AddMenuItem("Склады", adminOnly: true, () => _serviceProvider.GetRequiredService<WarehousesViewModel>());
         AddMenuItem("Ячейки", adminOnly: true, () => _serviceProvider.GetRequiredService<StorageLocationsViewModel>());
         AddMenuItem("Приёмка", adminOnly: false, () => _serviceProvider.GetRequiredService<ReceiptsViewModel>());
@@ -61,7 +61,7 @@ public class MainViewModel : ViewModelBase
         AddMenuItem("Комплектация", adminOnly: false, () => _serviceProvider.GetRequiredService<PickingViewModel>());
         AddMenuItem("Отгрузка", adminOnly: false, () => _serviceProvider.GetRequiredService<ShipmentViewModel>());
         AddMenuItem("История операций", adminOnly: false, () => _serviceProvider.GetRequiredService<StockMovementHistoryViewModel>());
-        AddMenuItem("Пользователи", adminOnly: true, () => new PlaceholderViewModel("Пользователи"));
+        AddMenuItem("Пользователи", adminOnly: true, () => _serviceProvider.GetRequiredService<UsersViewModel>());
 
         if (!isAdmin)
         {

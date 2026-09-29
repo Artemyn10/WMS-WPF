@@ -75,6 +75,21 @@ public partial class App : Application
                 services.AddTransient<ViewModels.ShipmentViewModel>();
                 services.AddTransient<Services.StockMovementService>();
                 services.AddTransient<ViewModels.StockMovementHistoryViewModel>();
+                services.AddTransient<Services.DashboardService>();
+                services.AddTransient<ViewModels.DashboardViewModel>();
+                services.AddTransient<Services.UserService>();
+
+                services.AddTransient<ViewModels.SuppliersViewModel>();
+                services.AddTransient<ViewModels.SupplierEditViewModel>();
+                services.AddTransient<Views.SupplierEditWindow>();
+
+                services.AddTransient<ViewModels.CustomersViewModel>();
+                services.AddTransient<ViewModels.CustomerEditViewModel>();
+                services.AddTransient<Views.CustomerEditWindow>();
+
+                services.AddTransient<ViewModels.UsersViewModel>();
+                services.AddTransient<ViewModels.UserEditViewModel>();
+                services.AddTransient<Views.UserEditWindow>();
             })
             .Build();
     }

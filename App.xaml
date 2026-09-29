@@ -44,5 +44,17 @@
         <DataTemplate DataType="{x:Type vm:StockMovementHistoryViewModel}">
             <views:StockMovementHistoryView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <views:DashboardView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SuppliersViewModel}">
+            <views:SuppliersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CustomersViewModel}">
+            <views:CustomersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UsersViewModel}">
+            <views:UsersView/>
+        </DataTemplate>
     </Application.Resources>
 </Application>
