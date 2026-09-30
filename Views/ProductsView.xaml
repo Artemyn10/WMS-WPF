@@ -26,9 +26,11 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Артикул" Binding="{Binding Article}" Width="100"/>
                 <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Категория" Binding="{Binding Category.Name}" Width="150"/>
-                <DataGridTextColumn Header="Штрихкод" Binding="{Binding Barcode}" Width="130"/>
-                <DataGridTextColumn Header="Ед. изм." Binding="{Binding Unit}" Width="80"/>
+                <DataGridTextColumn Header="Категория" Binding="{Binding Category.Name}" Width="130"/>
+                <DataGridTextColumn Header="Штрихкод" Binding="{Binding Barcode}" Width="120"/>
+                <DataGridTextColumn Header="Ед. изм." Binding="{Binding Unit}" Width="70"/>
+                <DataGridTextColumn Header="Год выпуска" Binding="{Binding ReleaseYear}" Width="90"/>
+                <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="2*"/>
             </DataGrid.Columns>
         </DataGrid>
 

@@ -105,6 +105,15 @@ public partial class App : Application
             Data.DbSeeder.Seed(dbContext);
         }
 
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        ShowLoginThenMain();
+
+        base.OnStartup(e);
+    }
+
+    private void ShowLoginThenMain()
+    {
         var loginWindow = AppHost.Services.GetRequiredService<Views.LoginWindow>();
         var loginResult = loginWindow.ShowDialog();
 
@@ -115,12 +124,26 @@ public partial class App : Application
         }
 
         var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
-
-        ShutdownMode = ShutdownMode.OnMainWindowClose;
         MainWindow = mainWindow;
 
-        base.OnStartup(e);
+        mainWindow.Closed += MainWindow_Closed;
+        mainWindow.Show();
+    }
+
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        var mainWindow = (MainWindow)sender!;
+        mainWindow.Closed -= MainWindow_Closed;
+
+        if (mainWindow.IsLogout)
+        {
+            Services.CurrentSession.SignOut();
+            ShowLoginThenMain();
+        }
+        else
+        {
+            Shutdown();
+        }
     }
 
     protected override async void OnExit(ExitEventArgs e)

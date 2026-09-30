@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
+using WMS.Helpers;
 using WMS.Services;
 
 namespace WMS.ViewModels;
@@ -22,8 +24,12 @@ public class MainViewModel : ViewModelBase
     public string CurrentUserRole => CurrentSession.CurrentUser?.Role == Models.UserRole.Administrator
         ? "Администратор"
         : "Кладовщик";
+    public event Action? LogoutRequested;
+    public event Action? ExitRequested;
 
-   
+    public ICommand LogoutCommand { get; }
+    public ICommand ExitCommand { get; }
+
 
     public MainViewModel(NavigationService navigationService, IServiceProvider serviceProvider)
     {
@@ -33,6 +39,9 @@ public class MainViewModel : ViewModelBase
         _navigationService.CurrentViewChanged += vm => CurrentView = vm;
 
         BuildMenu();
+
+        LogoutCommand = new RelayCommand(_ => LogoutRequested?.Invoke());
+        ExitCommand = new RelayCommand(_ => ExitRequested?.Invoke());
 
         var firstItem = MenuItems.FirstOrDefault();
         firstItem?.NavigateCommand.Execute(null);

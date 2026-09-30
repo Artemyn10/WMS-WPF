@@ -28,6 +28,8 @@ public class ProductEditViewModel : ViewModelBase
 
     private string _description = string.Empty;
     public string Description { get => _description; set => SetField(ref _description, value); }
+    private string _releaseYear = string.Empty;
+    public string ReleaseYear { get => _releaseYear; set => SetField(ref _releaseYear, value); }
 
     private Category? _selectedCategory;
     public Category? SelectedCategory { get => _selectedCategory; set => SetField(ref _selectedCategory, value); }
@@ -56,6 +58,7 @@ public class ProductEditViewModel : ViewModelBase
         await LoadCategoriesAsync();
         _id = 0;
         Name = Article = Barcode = Unit = Description = string.Empty;
+        ReleaseYear = string.Empty;
         SelectedCategory = null;
         WindowTitle = "Добавить товар";
         OnPropertyChanged(nameof(WindowTitle));
@@ -70,6 +73,7 @@ public class ProductEditViewModel : ViewModelBase
         Barcode = product.Barcode ?? string.Empty;
         Unit = product.Unit;
         Description = product.Description ?? string.Empty;
+        ReleaseYear = product.ReleaseYear?.ToString() ?? string.Empty;
         SelectedCategory = Categories.FirstOrDefault(c => c.Id == product.CategoryId);
         WindowTitle = "Изменить товар";
         OnPropertyChanged(nameof(WindowTitle));
@@ -87,6 +91,17 @@ public class ProductEditViewModel : ViewModelBase
 
     private async Task SaveAsync()
     {
+        int? releaseYear = null;
+        if (!string.IsNullOrWhiteSpace(ReleaseYear))
+        {
+            if (!int.TryParse(ReleaseYear, out var parsedYear))
+            {
+                ErrorMessage = "Год выпуска должен быть числом.";
+                return;
+            }
+            releaseYear = parsedYear;
+        }
+
         var product = new Product
         {
             Id = _id,
@@ -95,7 +110,8 @@ public class ProductEditViewModel : ViewModelBase
             Barcode = Barcode,
             CategoryId = SelectedCategory?.Id ?? 0,
             Unit = Unit,
-            Description = Description
+            Description = Description,
+            ReleaseYear = releaseYear
         };
 
         var result = _id == 0

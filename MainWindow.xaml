@@ -19,18 +19,38 @@
                     <TextBlock Text="{Binding CurrentUserRole}" Foreground="#95A5A6" FontSize="12"/>
                 </StackPanel>
 
+                <StackPanel DockPanel.Dock="Bottom" Margin="16">
+                    <Button Content="Выход из учётной записи"
+                    Command="{Binding LogoutCommand}"
+                    HorizontalContentAlignment="Left"
+                    Padding="8"
+                    Background="#34495E"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Margin="0,0,0,8"/>
+                    <Button Content="Выход из приложения"
+                    Command="{Binding ExitCommand}"
+                    HorizontalContentAlignment="Left"
+                    Padding="8"
+                    Background="#C0392B"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Cursor="Hand"/>
+                </StackPanel>
+
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding MenuItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Button Content="{Binding Title}"
-                                        Command="{Binding NavigateCommand}"
-                                        HorizontalContentAlignment="Left"
-                                        Padding="16,10"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Foreground="White"
-                                        Cursor="Hand">
+                                Command="{Binding NavigateCommand}"
+                                HorizontalContentAlignment="Left"
+                                Padding="16,10"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Foreground="White"
+                                Cursor="Hand">
                                     <Button.Style>
                                         <Style TargetType="Button">
                                             <Style.Triggers>

@@ -52,7 +52,8 @@ public class ProductService
             Barcode = string.IsNullOrWhiteSpace(product.Barcode) ? null : product.Barcode.Trim(),
             CategoryId = product.CategoryId,
             Unit = product.Unit.Trim(),
-            Description = string.IsNullOrWhiteSpace(product.Description) ? null : product.Description.Trim()
+            Description = string.IsNullOrWhiteSpace(product.Description) ? null : product.Description.Trim(),
+            ReleaseYear = product.ReleaseYear
         });
 
         await context.SaveChangesAsync();
@@ -86,6 +87,7 @@ public class ProductService
         existing.CategoryId = product.CategoryId;
         existing.Unit = product.Unit.Trim();
         existing.Description = string.IsNullOrWhiteSpace(product.Description) ? null : product.Description.Trim();
+        existing.ReleaseYear = product.ReleaseYear;
 
         await context.SaveChangesAsync();
         return (true, null);
@@ -133,6 +135,11 @@ public class ProductService
         if (product.CategoryId <= 0)
         {
             return "Необходимо выбрать категорию.";
+        }
+
+        if (product.ReleaseYear is < 1900 or > 2100)
+        {
+            return "Год выпуска указан некорректно.";
         }
 
         return null;
