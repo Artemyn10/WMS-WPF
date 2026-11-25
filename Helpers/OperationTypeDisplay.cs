@@ -11,6 +11,9 @@ public static class OperationTypeDisplay
         OperationType.Movement => "Перемещение",
         OperationType.Picking => "Комплектация",
         OperationType.Shipment => "Отгрузка",
+        OperationType.WriteOff => "Списание",
+        OperationType.StockTaking => "Инвентаризация",
+        OperationType.InterWarehouseTransfer => "Межскладское перемещение",
         _ => type.ToString()
     };
 }

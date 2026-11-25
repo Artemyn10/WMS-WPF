@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="WMS.Views.WriteOffsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="Списание" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBox Width="200" Margin="24,0,0,0" Padding="4"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
+            <Button Content="Новое списание" Margin="16,0,0,0" Padding="12,4" Command="{Binding AddCommand}"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding WriteOffs}"
+                  SelectedItem="{Binding SelectedWriteOff}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Номер" Binding="{Binding DocumentNumber}" Width="100"/>
+                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" Width="140"/>
+                <DataGridTextColumn Header="Склад" Binding="{Binding Warehouse.Name}" Width="140"/>
+                <DataGridTextColumn Header="Причина" Binding="{Binding Reason}" Width="200"/>
+                <DataGridTextColumn Header="Комментарий" Binding="{Binding Comment}" Width="*"/>
+                <DataGridTextColumn Header="Оформил" Binding="{Binding CreatedBy.FullName}" Width="180"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="4" Text="Состав выбранного списания" FontWeight="Bold" Margin="0,4,0,0"/>
+
+        <DataGrid Grid.Row="5" ItemsSource="{Binding SelectedWriteOff.Items}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Товар" Binding="{Binding Product.Name}" Width="*"/>
+                <DataGridTextColumn Header="Артикул" Binding="{Binding Product.Article}" Width="110"/>
+                <DataGridTextColumn Header="Ячейка" Binding="{Binding StorageLocation.Code}" Width="110"/>
+                <DataGridTextColumn Header="Количество" Binding="{Binding Quantity}" Width="110"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

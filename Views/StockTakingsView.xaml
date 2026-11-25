@@ -1,0 +1,91 @@
+﻿<UserControl x:Class="WMS.Views.StockTakingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- 0: заголовок -->
+            <RowDefinition Height="Auto"/>
+            <!-- 1: начать инвентаризацию -->
+            <RowDefinition Height="Auto"/>
+            <!-- 2: поиск и действия -->
+            <RowDefinition Height="2*"/>
+            <!-- 3: список документов -->
+            <RowDefinition Height="Auto"/>
+            <!-- 4: подпись -->
+            <RowDefinition Height="3*"/>
+            <!-- 5: акт выбранного документа -->
+            <RowDefinition Height="Auto"/>
+            <!-- 6: сообщение -->
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Инвентаризация" FontSize="20" FontWeight="Bold"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,12,0,0">
+            <TextBlock Text="Склад:" VerticalAlignment="Center"/>
+            <ComboBox Width="190" Margin="8,0,0,0" Padding="4"
+                      ItemsSource="{Binding Warehouses}" DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedWarehouse}"/>
+            <TextBlock Text="Комментарий:" VerticalAlignment="Center" Margin="16,0,0,0"/>
+            <TextBox Width="240" Margin="8,0,0,0" Padding="4"
+                     Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Начать инвентаризацию" Margin="16,0,0,0" Padding="12,4"
+                    Command="{Binding StartCommand}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,8">
+            <TextBox Width="200" Padding="4" VerticalAlignment="Center"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Продолжить пересчёт" Margin="16,0,0,0" Padding="12,4"
+                    Command="{Binding ContinueCommand}"/>
+            <Button Content="Удалить" Margin="8,0,0,0" Padding="12,4"
+                    Command="{Binding DeleteCommand}"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding StockTakings}"
+                  SelectedItem="{Binding SelectedStockTaking}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Номер" Binding="{Binding DocumentNumber}" Width="90"/>
+                <DataGridTextColumn Header="Склад" Binding="{Binding Warehouse.Name}" Width="140"/>
+                <DataGridTextColumn Header="Начата" Binding="{Binding StartDate, StringFormat=dd.MM.yyyy HH:mm}" Width="130"/>
+                <DataGridTextColumn Header="Завершена" Binding="{Binding CompletedDate, StringFormat=dd.MM.yyyy HH:mm}" Width="130"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding StatusDisplay}" Width="100"/>
+                <DataGridTextColumn Header="Позиций" Binding="{Binding ItemsCount}" Width="80"/>
+                <DataGridTextColumn Header="Расхождений" Binding="{Binding DifferencesCount}" Width="100"/>
+                <DataGridTextColumn Header="Комментарий" Binding="{Binding Comment}" Width="*"/>
+                <DataGridTextColumn Header="Провёл" Binding="{Binding CreatedBy.FullName}" Width="170"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="4" Text="Результаты пересчёта выбранного документа" FontWeight="Bold" Margin="0,8,0,4"/>
+
+        <DataGrid Grid.Row="5" ItemsSource="{Binding SelectedItems}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ResultDisplay}" Value="Недостача">
+                            <Setter Property="Background" Value="#FDEDEC"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ResultDisplay}" Value="Излишек">
+                            <Setter Property="Background" Value="#FEF9E7"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ячейка" Binding="{Binding StorageLocation.Code}" Width="90"/>
+                <DataGridTextColumn Header="Товар" Binding="{Binding Product.Name}" Width="*"/>
+                <DataGridTextColumn Header="Артикул" Binding="{Binding Product.Article}" Width="100"/>
+                <DataGridTextColumn Header="По учёту" Binding="{Binding ExpectedQuantity}" Width="90"/>
+                <DataGridTextColumn Header="Фактически" Binding="{Binding ActualQuantity}" Width="100"/>
+                <DataGridTextColumn Header="Расхождение" Binding="{Binding Difference, StringFormat='{}{0:+0;-0;0}'}" Width="100"/>
+                <DataGridTextColumn Header="Результат" Binding="{Binding ResultDisplay}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="6" Text="{Binding StatusMessage}" Foreground="Red" TextWrapping="Wrap" Margin="0,8,0,0"/>
+    </Grid>
+</UserControl>

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WMS.Models;
+﻿namespace WMS.Models;
 
 public enum UserRole
 {
-    Administrator,
-    Storekeeper
+    Administrator = 0,
+    Storekeeper = 1,
+    Director = 2,
+    WarehouseManager = 3,
+    PurchasingManager = 4,
+    SalesManager = 5,
+    InventorySpecialist = 6
 }
 
 public enum ReceiptStatus
@@ -38,5 +37,42 @@ public enum OperationType
     Placement,
     Movement,
     Picking,
-    Shipment
+    Shipment,
+    WriteOff,
+    StockTaking,
+    InterWarehouseTransfer
+}
+
+public enum StockTakingStatus
+{
+    InProgress,
+    Completed
+}
+
+public enum PurchaseOrderStatus
+{
+    New,
+    PartiallyReceived,
+    Received,
+    Cancelled
+}
+
+public enum ProductType
+{
+    Goods = 0,
+    Material = 1,
+    Equipment = 2
+}
+
+public enum ProductFileKind
+{
+    Photo = 0,
+    Document = 1
+}
+
+public enum WarehouseTransferStatus
+{
+    Created = 0,
+    Shipped = 1,
+    Received = 2
 }

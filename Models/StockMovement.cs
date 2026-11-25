@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WMS.Models;
+﻿namespace WMS.Models;
 
 public class StockMovement
 {
@@ -16,7 +10,11 @@ public class StockMovement
     public OperationType OperationType { get; set; }
     public DateTime Date { get; set; }
 
+    // Склад, на котором выполнена операция
+    public int? WarehouseId { get; set; }
+
     public Product? Product { get; set; }
     public StorageLocation? FromLocation { get; set; }
     public StorageLocation? ToLocation { get; set; }
+    public Warehouse? Warehouse { get; set; }
 }

@@ -1,0 +1,110 @@
+﻿<UserControl x:Class="WMS.Views.WarehouseEmployeesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="Сотрудники складов"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+
+            <ComboBox Width="160"
+                      Margin="24,0,0,0"
+                      Padding="4"
+                      VerticalAlignment="Center"
+                      ItemsSource="{Binding WarehouseFilters}"
+                      DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedWarehouseFilter}"/>
+
+            <TextBox Width="180"
+                     Margin="8,0,0,0"
+                     Padding="4"
+                     VerticalAlignment="Center"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Button Content="Добавить сотрудника"
+                    Margin="16,0,0,0"
+                    Padding="12,4"
+                    Command="{Binding AddCommand}"/>
+
+            <Button Content="Изменить"
+                    Margin="8,0,0,0"
+                    Padding="12,4"
+                    Command="{Binding EditCommand}"/>
+
+            <Button Content="Удалить"
+                    Margin="8,0,0,0"
+                    Padding="12,4"
+                    Command="{Binding DeleteCommand}"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Staff}"
+                  SelectedItem="{Binding SelectedStaff}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Тип"
+                                    Binding="{Binding TypeDisplay}"
+                                    Width="155"/>
+
+                <DataGridTextColumn Header="ФИО"
+                                    Binding="{Binding FullName}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Должность / роль и логин"
+                                    Binding="{Binding DetailsDisplay}"
+                                    Width="210"/>
+
+                <DataGridTextColumn Header="Склад"
+                                    Binding="{Binding WarehouseName}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Телефон"
+                                    Binding="{Binding Phone}"
+                                    Width="130"/>
+
+                <DataGridTextColumn Header="Email"
+                                    Binding="{Binding Email}"
+                                    Width="170"/>
+
+                <DataGridTemplateColumn Header="Ответственный"
+                                        Width="125">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Padding="5,2"
+                                    Command="{Binding DataContext.ToggleResponsibilityCommand,
+                                        RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Content" Value="Назначить"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsResponsible}"
+                                                         Value="True">
+                                                <Setter Property="Content" Value="Снять"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="3"
+                   Text="{Binding StatusMessage}"
+                   Foreground="Red"
+                   Margin="0,8,0,0"/>
+    </Grid>
+</UserControl>

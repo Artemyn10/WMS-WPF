@@ -7,12 +7,18 @@ public static class DbSeeder
 {
     public static void Seed(WmsDbContext context)
     {
-        // Если пользователей ещё нет - создаём все справочники и пользователей
+        // Если пользователей ещё нет - создаём справочники и первых пользователей
         var usersExist = context.Users.Any();
         if (!usersExist)
         {
             SeedCoreData(context);
         }
+
+        // Тестовые пользователи для остальных ролей (создаются, если ещё нет)
+        SeedRoleUsers(context);
+
+        // Производитель, стоимость и характеристики у тестовых товаров (только там, где они пустые)
+        SeedNomenclatureDetails(context);
 
         // Отдельно проверяем остатки - на случай, если в прошлый раз
         // сидер прервался после справочников, но до создания приёмки/остатков
@@ -20,6 +26,128 @@ public static class DbSeeder
         {
             SeedDemoOperations(context);
         }
+    }
+
+    private static void SeedNomenclatureDetails(WmsDbContext context)
+    {
+        var suppliers = context.Suppliers.ToList();
+        int? FindSupplier(string name) => suppliers.FirstOrDefault(s => s.Name == name)?.Id;
+
+        var techno = FindSupplier("ООО \"Техно\"");
+        var electro = FindSupplier("ЗАО \"ЭлектроПоставка\"");
+        var sidorov = FindSupplier("ИП Сидоров А.А.");
+
+        var details = new (string Article, string Manufacturer, int? SupplierId, decimal Purchase,
+            decimal Accounting, string Characteristics, int Year, ProductType Type)[]
+        {
+            ("ART-0001", "Lenovo", techno, 42000m, 45000m,
+                "Экран 15.6\" FHD; процессор Intel Core i5; ОЗУ 8 ГБ; SSD 512 ГБ; Windows 11", 2023, ProductType.Goods),
+            ("ART-0002", "ASUS", techno, 38000m, 41000m,
+                "Экран 15.6\" FHD; процессор AMD Ryzen 5; ОЗУ 16 ГБ; SSD 512 ГБ", 2023, ProductType.Goods),
+            ("ART-0003", "Logitech", electro, 450m, 520m,
+                "Беспроводная; 1000 DPI; USB-приёмник; питание от батарейки AA", 2022, ProductType.Goods),
+            ("ART-0004", "A4Tech", electro, 600m, 700m,
+                "Проводная; USB; 104 клавиши; защита от влаги", 2022, ProductType.Goods),
+            ("ART-0005", "Samsung", techno, 9500m, 10500m,
+                "24\"; матрица IPS; 1920x1080; 75 Гц; HDMI и VGA", 2023, ProductType.Goods),
+            ("ART-0006", "LG", techno, 14500m, 16000m,
+                "27\"; матрица IPS; 2560x1440; 75 Гц; HDMI и DisplayPort", 2024, ProductType.Goods),
+            ("ART-0007", "Kingston", electro, 2100m, 2400m,
+                "DDR4; 8 ГБ; 3200 МГц; CL22", 2022, ProductType.Goods),
+            ("ART-0008", "Samsung", electro, 3900m, 4400m,
+                "SATA III; 512 ГБ; скорость чтения до 550 МБ/с", 2023, ProductType.Goods),
+            ("ART-0009", "TP-Link", sidorov, 2300m, 2600m,
+                "Wi-Fi 5; до 1200 Мбит/с; 4 порта LAN; два диапазона", 2023, ProductType.Equipment),
+            ("ART-0010", "Hyperline", sidorov, 120m, 150m,
+                "Категория 6; UTP; длина 2 м; разъёмы RJ-45", 2022, ProductType.Material)
+        };
+
+        foreach (var detail in details)
+        {
+            var product = context.Products.FirstOrDefault(p => p.Article == detail.Article);
+            if (product == null)
+            {
+                continue;
+            }
+
+            // Не трогаем товары, у которых данные уже заполнены
+            if (product.Manufacturer != null || product.PurchasePrice != null ||
+                product.AccountingPrice != null || product.Characteristics != null)
+            {
+                continue;
+            }
+
+            product.Manufacturer = detail.Manufacturer;
+            product.SupplierId = detail.SupplierId;
+            product.PurchasePrice = detail.Purchase;
+            product.AccountingPrice = detail.Accounting;
+            product.Characteristics = detail.Characteristics;
+            product.ReleaseYear ??= detail.Year;
+            product.ItemType = detail.Type;
+        }
+
+        context.SaveChanges();
+    }
+
+    private static void SeedRoleUsers(WmsDbContext context)
+    {
+        var mainWarehouse = context.Warehouses.FirstOrDefault(w => w.Name == "Основной склад")
+                            ?? context.Warehouses.OrderBy(w => w.Id).FirstOrDefault();
+
+        // Для специалиста по инвентаризации берём второй склад, если он есть
+        var secondWarehouse = context.Warehouses.FirstOrDefault(w => w.Name == "Склад в ПМР")
+                              ?? mainWarehouse;
+
+        var testUsers = new List<User>
+        {
+            new()
+            {
+                Login = "director",
+                PasswordHash = PasswordHasher.Hash("director123"),
+                FullName = "Смирнов Алексей Петрович",
+                Role = UserRole.Director
+            },
+            new()
+            {
+                Login = "manager",
+                PasswordHash = PasswordHasher.Hash("manager123"),
+                FullName = "Козлов Дмитрий Андреевич",
+                Role = UserRole.WarehouseManager,
+                WarehouseId = mainWarehouse?.Id
+            },
+            new()
+            {
+                Login = "buyer",
+                PasswordHash = PasswordHasher.Hash("buyer123"),
+                FullName = "Новикова Марина Олеговна",
+                Role = UserRole.PurchasingManager
+            },
+            new()
+            {
+                Login = "seller",
+                PasswordHash = PasswordHasher.Hash("seller123"),
+                FullName = "Волков Игорь Сергеевич",
+                Role = UserRole.SalesManager
+            },
+            new()
+            {
+                Login = "auditor",
+                PasswordHash = PasswordHasher.Hash("auditor123"),
+                FullName = "Лебедева Анна Викторовна",
+                Role = UserRole.InventorySpecialist,
+                WarehouseId = secondWarehouse?.Id
+            }
+        };
+
+        foreach (var user in testUsers)
+        {
+            if (!context.Users.Any(u => u.Login == user.Login))
+            {
+                context.Users.Add(user);
+            }
+        }
+
+        context.SaveChanges();
     }
 
     private static void SeedCoreData(WmsDbContext context)
@@ -133,6 +261,7 @@ public static class DbSeeder
             Warehouse = warehouse,
             DocumentNumber = "REC-0001",
             Date = DateTime.UtcNow,
+            ArrivalDate = DateOnly.FromDateTime(DateTime.Now),
             Status = ReceiptStatus.Confirmed,
             Items = new List<ReceiptItem>
         {
@@ -155,6 +284,7 @@ public static class DbSeeder
                 FromLocation = null,
                 ToLocation = location1,
                 Quantity = 20,
+                WarehouseId = warehouse.Id,
                 OperationType = OperationType.Receipt,
                 Date = DateTime.UtcNow
             },
@@ -164,6 +294,7 @@ public static class DbSeeder
                 FromLocation = null,
                 ToLocation = location2,
                 Quantity = 50,
+                WarehouseId = warehouse.Id,
                 OperationType = OperationType.Receipt,
                 Date = DateTime.UtcNow
             }

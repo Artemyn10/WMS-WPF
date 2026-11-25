@@ -1,0 +1,162 @@
+﻿<UserControl x:Class="WMS.Views.ReceiptHistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <WrapPanel Margin="0,10,0,0">
+                <TextBlock Text="Склад:" VerticalAlignment="Center"/>
+                <ComboBox Width="160"
+                          Margin="6,0,16,6"
+                          Padding="4"
+                          ItemsSource="{Binding WarehouseFilters}"
+                          DisplayMemberPath="Name"
+                          SelectedItem="{Binding SelectedWarehouseFilter}"/>
+
+                <TextBlock Text="Поставщик:" VerticalAlignment="Center"/>
+                <ComboBox Width="190"
+                          Margin="6,0,16,6"
+                          Padding="4"
+                          ItemsSource="{Binding SupplierFilters}"
+                          DisplayMemberPath="Name"
+                          SelectedItem="{Binding SelectedSupplierFilter}"/>
+
+                <TextBlock Text="Период с:" VerticalAlignment="Center"/>
+                <DatePicker Width="120"
+                            Margin="6,0,8,6"
+                            SelectedDate="{Binding DateFrom, Mode=TwoWay}"/>
+
+                <TextBlock Text="по:" VerticalAlignment="Center"/>
+                <DatePicker Width="120"
+                            Margin="6,0,16,6"
+                            SelectedDate="{Binding DateTo, Mode=TwoWay}"/>
+
+                <TextBox Width="200"
+                         Margin="0,0,8,6"
+                         Padding="4"
+                         ToolTip="Поиск по номеру документа, поставщику, складу и товару"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <Button Content="Сбросить"
+                        Margin="0,0,0,6"
+                        Padding="12,4"
+                        Command="{Binding ResetCommand}"/>
+            </WrapPanel>
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Text="{Binding StatusMessage}"
+                   Foreground="Red"
+                   TextWrapping="Wrap"/>
+
+        <StackPanel Grid.Row="2" Margin="0,4,0,8">
+            <TextBlock Text="По складам" FontWeight="Bold"/>
+            <DataGrid ItemsSource="{Binding WarehouseSummary}"
+                      Height="95"
+                      Margin="0,4,0,0"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Склад"
+                                        Binding="{Binding WarehouseName}"
+                                        Width="*"/>
+                    <DataGridTextColumn Header="Документов"
+                                        Binding="{Binding DocumentsCount}"
+                                        Width="110"/>
+                    <DataGridTextColumn Header="Единиц товара"
+                                        Binding="{Binding TotalQuantity}"
+                                        Width="120"/>
+                    <DataGridTextColumn Header="Последнее поступление"
+                                        Binding="{Binding LastArrivalDate, StringFormat=dd.MM.yyyy}"
+                                        Width="170"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="{Binding SummaryText}"
+                       FontWeight="Bold"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="3"
+                  ItemsSource="{Binding Receipts}"
+                  SelectedItem="{Binding SelectedReceipt}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Номер"
+                                    Binding="{Binding DocumentNumber}"
+                                    Width="150"/>
+                <DataGridTextColumn Header="Дата поступления"
+                                    Binding="{Binding ArrivalDate, StringFormat=dd.MM.yyyy}"
+                                    Width="125"/>
+                <DataGridTextColumn Header="Склад"
+                                    Binding="{Binding WarehouseName}"
+                                    Width="140"/>
+                <DataGridTextColumn Header="Поставщик / источник"
+                                    Binding="{Binding SourceDisplay}"
+                                    Width="*"/>
+                <DataGridTextColumn Header="Заказ поставщику"
+                                    Binding="{Binding PurchaseOrderNumber}"
+                                    Width="125"/>
+                <DataGridTextColumn Header="Позиций"
+                                    Binding="{Binding ItemsCount}"
+                                    Width="70"/>
+                <DataGridTextColumn Header="Всего ед."
+                                    Binding="{Binding TotalQuantity}"
+                                    Width="80"/>
+                <DataGridTextColumn Header="Принял"
+                                    Binding="{Binding ReceivedBy}"
+                                    Width="160"/>
+                <DataGridTextColumn Header="Оформлено"
+                                    Binding="{Binding DateLocal, StringFormat=dd.MM.yyyy HH:mm}"
+                                    Width="125"/>
+                <DataGridTextColumn Header="Статус"
+                                    Binding="{Binding StatusDisplay}"
+                                    Width="180"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="4"
+                   Text="Состав выбранного документа"
+                   FontWeight="Bold"
+                   Margin="0,8,0,4"/>
+
+        <DataGrid Grid.Row="5"
+                  ItemsSource="{Binding SelectedReceipt.Items}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Товар"
+                                    Binding="{Binding ProductName}"
+                                    Width="*"/>
+                <DataGridTextColumn Header="Артикул"
+                                    Binding="{Binding Article}"
+                                    Width="110"/>
+                <DataGridTextColumn Header="Принято"
+                                    Binding="{Binding Quantity}"
+                                    Width="90"/>
+                <DataGridTextColumn Header="Размещено"
+                                    Binding="{Binding PlacedQuantity}"
+                                    Width="100"/>
+                <DataGridTextColumn Header="Ожидает размещения"
+                                    Binding="{Binding Remaining}"
+                                    Width="150"/>
+                <DataGridTextColumn Header="Ячейка получателя"
+                                    Binding="{Binding DestinationLocationCode}"
+                                    Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

@@ -32,6 +32,9 @@
         <DataTemplate DataType="{x:Type vm:MovementViewModel}">
             <views:MovementView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WarehouseTransfersViewModel}">
+            <views:WarehouseTransfersView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:OrdersViewModel}">
             <views:OrdersView/>
         </DataTemplate>
@@ -55,6 +58,21 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:UsersViewModel}">
             <views:UsersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WarehouseEmployeesViewModel}">
+            <views:WarehouseEmployeesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WarehouseSummaryViewModel}">
+            <views:WarehouseSummaryView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WriteOffsViewModel}">
+            <views:WriteOffsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StockTakingsViewModel}">
+            <views:StockTakingsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PurchaseOrdersViewModel}">
+            <views:PurchaseOrdersView/>
         </DataTemplate>
     </Application.Resources>
 </Application>

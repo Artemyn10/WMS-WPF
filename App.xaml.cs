@@ -22,7 +22,8 @@ public partial class App : Application
             })
             .ConfigureServices((context, services) =>
             {
-                var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
+                var connectionString =
+                    context.Configuration.GetConnectionString("DefaultConnection");
 
                 services.AddDbContextFactory<WmsDbContext>(options =>
                     options.UseNpgsql(connectionString));
@@ -61,9 +62,10 @@ public partial class App : Application
                 services.AddTransient<Views.ReceiptEditWindow>();
                 services.AddTransient<Services.SupplierService>();
                 services.AddTransient<Services.PlacementService>();
-                services.AddTransient<ViewModels.PlacementViewModel>();
                 services.AddTransient<Services.MovementService>();
                 services.AddTransient<ViewModels.MovementViewModel>();
+                services.AddTransient<Services.WarehouseTransferService>();
+                services.AddTransient<ViewModels.WarehouseTransfersViewModel>();
                 services.AddTransient<Services.CustomerService>();
                 services.AddTransient<Services.OrderService>();
                 services.AddTransient<ViewModels.OrdersViewModel>();
@@ -90,6 +92,35 @@ public partial class App : Application
                 services.AddTransient<ViewModels.UsersViewModel>();
                 services.AddTransient<ViewModels.UserEditViewModel>();
                 services.AddTransient<Views.UserEditWindow>();
+                services.AddTransient<Services.WarehouseEmployeeService>();
+                services.AddTransient<Services.WarehouseSummaryService>();
+
+                services.AddTransient<ViewModels.WarehouseEmployeesViewModel>();
+                services.AddTransient<ViewModels.WarehouseEmployeeEditViewModel>();
+                services.AddTransient<Views.WarehouseEmployeeEditWindow>();
+
+                services.AddTransient<ViewModels.WarehouseSummaryViewModel>();
+                services.AddTransient<ViewModels.ChangePasswordViewModel>();
+                services.AddTransient<Views.ChangePasswordWindow>();
+                services.AddTransient<Services.WriteOffService>();
+                services.AddTransient<ViewModels.WriteOffsViewModel>();
+                services.AddTransient<ViewModels.WriteOffEditViewModel>();
+                services.AddTransient<Views.WriteOffEditWindow>();
+                services.AddTransient<Services.StockTakingService>();
+                services.AddTransient<ViewModels.StockTakingsViewModel>();
+                services.AddTransient<ViewModels.StockTakingCountViewModel>();
+                services.AddTransient<Views.StockTakingCountWindow>();
+                services.AddTransient<Services.PurchaseOrderService>();
+                services.AddTransient<ViewModels.PurchaseOrdersViewModel>();
+                services.AddTransient<ViewModels.PurchaseOrderEditViewModel>();
+                services.AddTransient<Views.PurchaseOrderEditWindow>();
+                services.AddTransient<Services.ReceiptHistoryService>();
+                services.AddTransient<ViewModels.ReceiptHistoryViewModel>();
+                services.AddTransient<Services.PlacementService>();
+                services.AddTransient<ViewModels.PlacementViewModel>();
+
+                services.AddTransient<Services.MovementService>();
+                services.AddTransient<ViewModels.MovementViewModel>();
             })
             .Build();
     }
@@ -98,7 +129,9 @@ public partial class App : Application
     {
         await AppHost.StartAsync();
 
-        var contextFactory = AppHost.Services.GetRequiredService<IDbContextFactory<Data.WmsDbContext>>();
+        var contextFactory =
+            AppHost.Services.GetRequiredService<IDbContextFactory<WmsDbContext>>();
+
         await using (var dbContext = await contextFactory.CreateDbContextAsync())
         {
             dbContext.Database.Migrate();
@@ -106,7 +139,6 @@ public partial class App : Application
         }
 
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
-
         ShowLoginThenMain();
 
         base.OnStartup(e);

@@ -60,8 +60,8 @@ public class UsersViewModel : ViewModelBase
         var window = _serviceProvider.GetRequiredService<UserEditWindow>();
         var viewModel = (UserEditViewModel)window.DataContext;
 
-        if (user == null) viewModel.InitializeForAdd();
-        else viewModel.InitializeForEdit(user);
+        if (user == null) await viewModel.InitializeForAddAsync();
+        else await viewModel.InitializeForEditAsync(user);
 
         if (window.ShowDialog() == true)
         {

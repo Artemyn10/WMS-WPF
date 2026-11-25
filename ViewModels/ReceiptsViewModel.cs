@@ -29,6 +29,9 @@ public class ReceiptsViewModel : ViewModelBase
         set => SetField(ref _selectedReceipt, value);
     }
 
+    private string _successMessage = string.Empty;
+    public string SuccessMessage { get => _successMessage; set => SetField(ref _successMessage, value); }
+
     public ICommand AddCommand { get; }
 
     public ReceiptsViewModel(ReceiptService receiptService, IServiceProvider serviceProvider)
@@ -50,6 +53,8 @@ public class ReceiptsViewModel : ViewModelBase
 
     private async Task OpenCreateDialogAsync()
     {
+        SuccessMessage = string.Empty;
+
         var window = _serviceProvider.GetRequiredService<ReceiptEditWindow>();
         var viewModel = (ReceiptEditViewModel)window.DataContext;
 
@@ -57,6 +62,8 @@ public class ReceiptsViewModel : ViewModelBase
 
         if (window.ShowDialog() == true)
         {
+            SuccessMessage = "Поступление подтверждено. Товар учтён в остатках (зона приёмки) " +
+                             "и ожидает размещения по ячейкам.";
             await LoadAsync();
         }
     }

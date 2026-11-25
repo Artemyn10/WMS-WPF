@@ -18,15 +18,30 @@ public class DashboardService
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
+        var warehouses = context.Warehouses.AsQueryable();
+        var locations = context.StorageLocations.AsQueryable();
+        var orders = context.Orders.AsQueryable();
+        var receipts = context.Receipts.AsQueryable();
+        var shipments = context.Shipments.AsQueryable();
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            warehouses = warehouses.Where(w => w.Id == scopeId);
+            locations = locations.Where(l => l.WarehouseId == scopeId);
+            orders = orders.Where(o => o.WarehouseId == scopeId);
+            receipts = receipts.Where(r => r.WarehouseId == scopeId);
+            shipments = shipments.Where(s => s.Order!.WarehouseId == scopeId);
+        }
+
         return new DashboardStats
         {
             ProductsCount = await context.Products.CountAsync(),
-            WarehousesCount = await context.Warehouses.CountAsync(),
-            LocationsCount = await context.StorageLocations.CountAsync(),
-            ActiveOrdersCount = await context.Orders.CountAsync(o =>
+            WarehousesCount = await warehouses.CountAsync(),
+            LocationsCount = await locations.CountAsync(),
+            ActiveOrdersCount = await orders.CountAsync(o =>
                 o.Status == OrderStatus.New || o.Status == OrderStatus.Assembling || o.Status == OrderStatus.Assembled),
-            ReceiptsCount = await context.Receipts.CountAsync(),
-            ShipmentsCount = await context.Shipments.CountAsync()
+            ReceiptsCount = await receipts.CountAsync(),
+            ShipmentsCount = await shipments.CountAsync()
         };
     }
 
@@ -34,10 +49,18 @@ public class DashboardService
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        var movements = await context.StockMovements
+        var query = context.StockMovements
             .Include(m => m.Product)
             .Include(m => m.FromLocation)
             .Include(m => m.ToLocation)
+            .AsQueryable();
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(m => m.WarehouseId == scopeId);
+        }
+
+        var movements = await query
             .OrderByDescending(m => m.Date)
             .Take(count)
             .ToListAsync();

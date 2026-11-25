@@ -14,18 +14,24 @@ public class ShipmentService
     }
 
     /// Заказы, полностью собранные и ожидающие отгрузки
+    /// Заказы, полностью собранные и ожидающие отгрузки
     public async Task<List<Order>> GetOrdersPendingShipmentAsync()
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        return await context.Orders
+        var query = context.Orders
             .Include(o => o.Customer)
             .Include(o => o.Warehouse)
             .Include(o => o.Items)
                 .ThenInclude(i => i.Product)
-            .Where(o => o.Status == OrderStatus.Assembled)
-            .OrderBy(o => o.Date)
-            .ToListAsync();
+            .Where(o => o.Status == OrderStatus.Assembled);
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(o => o.WarehouseId == scopeId);
+        }
+
+        return await query.OrderBy(o => o.Date).ToListAsync();
     }
 
     public async Task<List<Shipment>> GetShipmentsAsync(string? search = null)
@@ -38,6 +44,11 @@ public class ShipmentService
             .Include(s => s.Items)
                 .ThenInclude(i => i.Product)
             .AsQueryable();
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(s => s.Order!.WarehouseId == scopeId);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -89,6 +100,7 @@ public class ShipmentService
                 ProductId = item.ProductId,
                 FromLocationId = null,
                 ToLocationId = null,
+                WarehouseId = order.WarehouseId,
                 Quantity = item.PickedQuantity,
                 OperationType = OperationType.Shipment,
                 Date = DateTime.UtcNow

@@ -22,7 +22,7 @@ public class AuthService
         }
 
         await using var context = await _contextFactory.CreateDbContextAsync();
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Login == login);
+        var user = await context.Users.Include(u => u.Warehouse).FirstOrDefaultAsync(u => u.Login == login);
 
         if (user == null || !PasswordHasher.Verify(password, user.PasswordHash))
         {

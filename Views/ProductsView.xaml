@@ -1,39 +1,103 @@
 ﻿<UserControl x:Class="WMS.Views.ProductsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- 0: поиск и кнопки -->
             <RowDefinition Height="8"/>
+            <!-- 1: отступ -->
             <RowDefinition Height="*"/>
+            <!-- 2: таблица -->
             <RowDefinition Height="Auto"/>
+            <!-- 3: сведения о выбранном товаре -->
+            <RowDefinition Height="Auto"/>
+            <!-- 4: сообщение -->
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <TextBlock Text="Товары" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <TextBox Width="240" Margin="24,0,0,0" Padding="4"
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     VerticalAlignment="Center"/>
-            <Button Content="Добавить" Margin="16,0,0,0" Padding="12,4" Command="{Binding AddCommand}"/>
-            <Button Content="Изменить" Margin="8,0,0,0" Padding="12,4" Command="{Binding EditCommand}"/>
-            <Button Content="Удалить" Margin="8,0,0,0" Padding="12,4" Command="{Binding DeleteCommand}"/>
+            <TextBlock Text="Номенклатура" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBox Width="240" Margin="24,0,0,0" Padding="4" VerticalAlignment="Center"
+                     ToolTip="Поиск по наименованию, артикулу, штрихкоду, производителю и категории"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+            <ComboBox Width="170" Margin="8,0,0,0" Padding="4" VerticalAlignment="Center"
+                      ItemsSource="{Binding CategoryFilters}" DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedCategoryFilter}"/>
+            <Button Content="Добавить" Margin="16,0,0,0" Padding="12,4" Command="{Binding AddCommand}"
+                    Visibility="{Binding CanEdit, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Изменить" Margin="8,0,0,0" Padding="12,4" Command="{Binding EditCommand}"
+                    Visibility="{Binding CanEdit, Converter={StaticResource BoolToVis}}"/>
+            <Button Content="Удалить" Margin="8,0,0,0" Padding="12,4" Command="{Binding DeleteCommand}"
+                    Visibility="{Binding CanEdit, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
         <DataGrid Grid.Row="2" ItemsSource="{Binding Products}"
                   SelectedItem="{Binding SelectedProduct}"
-                  AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False">
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Артикул" Binding="{Binding Article}" Width="100"/>
-                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Категория" Binding="{Binding Category.Name}" Width="130"/>
-                <DataGridTextColumn Header="Штрихкод" Binding="{Binding Barcode}" Width="120"/>
-                <DataGridTextColumn Header="Ед. изм." Binding="{Binding Unit}" Width="70"/>
-                <DataGridTextColumn Header="Год выпуска" Binding="{Binding ReleaseYear}" Width="90"/>
-                <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="2*"/>
+                <DataGridTextColumn Header="Артикул" Binding="{Binding Article}" Width="95"/>
+                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*" MinWidth="160"/>
+                <DataGridTextColumn Header="Вид" Binding="{Binding ItemTypeDisplay}" Width="95"/>
+                <DataGridTextColumn Header="Категория" Binding="{Binding Category.Name}" Width="120"/>
+                <DataGridTextColumn Header="Производитель" Binding="{Binding Manufacturer}" Width="120"/>
+                <DataGridTextColumn Header="Поставщик" Binding="{Binding Supplier.Name}" Width="140"/>
+                <DataGridTextColumn Header="Штрихкод" Binding="{Binding Barcode}" Width="115"/>
+                <DataGridTextColumn Header="Ед. изм." Binding="{Binding Unit}" Width="65"/>
+                <DataGridTextColumn Header="Год выпуска" Binding="{Binding ReleaseYear}" Width="85"/>
+                <DataGridTextColumn x:Name="PurchasePriceColumn" Header="Закупочная, руб."
+                                    Binding="{Binding PurchasePrice, StringFormat='{}{0:N2}'}" Width="110"/>
+                <DataGridTextColumn x:Name="AccountingPriceColumn" Header="Учётная, руб."
+                                    Binding="{Binding AccountingPrice, StringFormat='{}{0:N2}'}" Width="100"/>
+                <DataGridTextColumn Header="Файлов" Binding="{Binding FilesCount}" Width="65"/>
+                <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="200"/>
             </DataGrid.Columns>
         </DataGrid>
 
-        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Foreground="Red" Margin="0,8,0,0"/>
+        <!-- Сведения о выбранном товаре: фото, характеристики, наличие по складам -->
+        <Border Grid.Row="3" Margin="0,10,0,0" Padding="10"
+                BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="4">
+            <Grid Height="170">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="320"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Width="160" Height="160" BorderBrush="#DDDDDD" BorderThickness="1">
+                    <Grid>
+                        <Image Source="{Binding SelectedPhoto}" Stretch="Uniform"/>
+                        <TextBlock Text="Нет фото" Foreground="Gray"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Visibility="{Binding HasNoPhoto, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="12,0,12,0">
+                    <TextBlock Text="Характеристики" FontWeight="Bold"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="145" Margin="0,4,0,0">
+                        <TextBlock Text="{Binding SelectedProduct.Characteristics}" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Наличие по складам" FontWeight="Bold"/>
+                    <DataGrid ItemsSource="{Binding StockByWarehouse}" Height="110" Margin="0,4,0,0"
+                              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Склад" Binding="{Binding WarehouseName}" Width="*"/>
+                            <DataGridTextColumn Header="Количество" Binding="{Binding Quantity}" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Text="{Binding TotalStock, StringFormat='Всего: {0}'}" FontWeight="Bold" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Foreground="Red" TextWrapping="Wrap" Margin="0,8,0,0"/>
     </Grid>
 </UserControl>

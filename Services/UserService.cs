@@ -7,6 +7,8 @@ namespace WMS.Services;
 
 public class UserService
 {
+    private const int MinPasswordLength = 6;
+
     private readonly IDbContextFactory<WmsDbContext> _contextFactory;
 
     public UserService(IDbContextFactory<WmsDbContext> contextFactory)
@@ -17,20 +19,27 @@ public class UserService
     public async Task<List<User>> GetAllAsync(string? search = null)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
-        var query = context.Users.AsQueryable();
+        var query = context.Users.Include(user => user.Warehouse).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var s = search.ToLower();
-            query = query.Where(u => u.Login.ToLower().Contains(s) || u.FullName.ToLower().Contains(s));
+            var value = search.Trim().ToLower();
+            query = query.Where(user =>
+                user.Login.ToLower().Contains(value) ||
+                user.FullName.ToLower().Contains(value));
         }
 
-        return await query.OrderBy(u => u.Login).ToListAsync();
+        return await query.OrderBy(user => user.Login).ToListAsync();
     }
 
-    public async Task<(bool Success, string? Error)> AddAsync(string login, string password, string fullName, UserRole role)
+    public async Task<(bool Success, string? Error)> AddAsync(
+        string login,
+        string password,
+        string fullName,
+        UserRole role,
+        int? warehouseId)
     {
-        var validationError = Validate(login, fullName);
+        var validationError = Validate(login, fullName, role, warehouseId);
         if (validationError != null)
         {
             return (false, validationError);
@@ -41,37 +50,63 @@ public class UserService
             return (false, "Пароль обязателен для нового пользователя.");
         }
 
+        var passwordError = ValidatePassword(password);
+        if (passwordError != null)
+        {
+            return (false, passwordError);
+        }
+
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        if (await context.Users.AnyAsync(u => u.Login == login.Trim()))
+        var normalizedLogin = login.Trim();
+        if (await context.Users.AnyAsync(user => user.Login == normalizedLogin))
         {
             return (false, "Пользователь с таким логином уже существует.");
         }
 
         context.Users.Add(new User
         {
-            Login = login.Trim(),
+            Login = normalizedLogin,
             PasswordHash = PasswordHasher.Hash(password),
             FullName = fullName.Trim(),
-            Role = role
+            Role = role,
+            WarehouseId = NormalizeWarehouse(role, warehouseId),
+            IsWarehouseResponsible = false
         });
 
         await context.SaveChangesAsync();
         return (true, null);
     }
 
-    /// Если password пустой - пароль не меняется, обновляются только логин/имя/роль
-    public async Task<(bool Success, string? Error)> UpdateAsync(int id, string login, string? password, string fullName, UserRole role)
+    /// <summary>Если password пустой, пароль не меняется.</summary>
+    public async Task<(bool Success, string? Error)> UpdateAsync(
+        int id,
+        string login,
+        string? password,
+        string fullName,
+        UserRole role,
+        int? warehouseId)
     {
-        var validationError = Validate(login, fullName);
+        var validationError = Validate(login, fullName, role, warehouseId);
         if (validationError != null)
         {
             return (false, validationError);
         }
 
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            var passwordError = ValidatePassword(password);
+            if (passwordError != null)
+            {
+                return (false, passwordError);
+            }
+        }
+
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        if (await context.Users.AnyAsync(u => u.Login == login.Trim() && u.Id != id))
+        var normalizedLogin = login.Trim();
+        if (await context.Users.AnyAsync(user =>
+                user.Login == normalizedLogin && user.Id != id))
         {
             return (false, "Пользователь с таким логином уже существует.");
         }
@@ -82,15 +117,83 @@ public class UserService
             return (false, "Пользователь не найден.");
         }
 
-        existing.Login = login.Trim();
+        if (existing.Role == UserRole.Administrator &&
+            role != UserRole.Administrator)
+        {
+            var administrators =
+                await context.Users.CountAsync(user =>
+                    user.Role == UserRole.Administrator);
+
+            if (administrators <= 1)
+            {
+                return (
+                    false,
+                    "Нельзя снять роль с последнего администратора системы.");
+            }
+        }
+
+        var normalizedWarehouseId = NormalizeWarehouse(role, warehouseId);
+        if (existing.WarehouseId != normalizedWarehouseId)
+        {
+            existing.IsWarehouseResponsible = false;
+        }
+
+        existing.Login = normalizedLogin;
         existing.FullName = fullName.Trim();
         existing.Role = role;
+        existing.WarehouseId = normalizedWarehouseId;
 
         if (!string.IsNullOrWhiteSpace(password))
         {
             existing.PasswordHash = PasswordHasher.Hash(password);
         }
 
+        await context.SaveChangesAsync();
+        return (true, null);
+    }
+
+    /// <summary>Для смены собственного пароля требуется знать текущий пароль.</summary>
+    public async Task<(bool Success, string? Error)> ChangePasswordAsync(
+        int userId,
+        string currentPassword,
+        string newPassword,
+        string confirmPassword)
+    {
+        if (string.IsNullOrEmpty(currentPassword))
+        {
+            return (false, "Введите текущий пароль.");
+        }
+
+        var passwordError = ValidatePassword(newPassword);
+        if (passwordError != null)
+        {
+            return (false, passwordError);
+        }
+
+        if (newPassword != confirmPassword)
+        {
+            return (false, "Новый пароль и подтверждение не совпадают.");
+        }
+
+        if (newPassword == currentPassword)
+        {
+            return (false, "Новый пароль должен отличаться от текущего.");
+        }
+
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        var user = await context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return (false, "Пользователь не найден.");
+        }
+
+        if (!PasswordHasher.Verify(currentPassword, user.PasswordHash))
+        {
+            return (false, "Текущий пароль указан неверно.");
+        }
+
+        user.PasswordHash = PasswordHasher.Hash(newPassword);
         await context.SaveChangesAsync();
         return (true, null);
     }
@@ -103,6 +206,7 @@ public class UserService
         }
 
         await using var context = await _contextFactory.CreateDbContextAsync();
+
         var user = await context.Users.FindAsync(id);
         if (user == null)
         {
@@ -118,11 +222,36 @@ public class UserService
         }
         catch (DbUpdateException)
         {
-            return (false, "Невозможно удалить пользователя: на него есть ссылки в системе.");
+            return (
+                false,
+                "Невозможно удалить пользователя: на него есть ссылки в системе.");
         }
     }
 
-    private static string? Validate(string login, string fullName)
+    private static bool UsesWarehouse(UserRole role) =>
+        role is UserRole.WarehouseManager
+            or UserRole.Storekeeper
+            or UserRole.InventorySpecialist;
+
+    private static int? NormalizeWarehouse(UserRole role, int? warehouseId) =>
+        UsesWarehouse(role) ? warehouseId : null;
+
+    private static string? ValidatePassword(string password)
+    {
+        if (string.IsNullOrWhiteSpace(password) ||
+            password.Length < MinPasswordLength)
+        {
+            return $"Пароль должен содержать не менее {MinPasswordLength} символов.";
+        }
+
+        return null;
+    }
+
+    private static string? Validate(
+        string login,
+        string fullName,
+        UserRole role,
+        int? warehouseId)
     {
         if (string.IsNullOrWhiteSpace(login))
         {
@@ -132,6 +261,11 @@ public class UserService
         if (string.IsNullOrWhiteSpace(fullName))
         {
             return "ФИО обязательно для заполнения.";
+        }
+
+        if (role == UserRole.WarehouseManager && warehouseId == null)
+        {
+            return "Для заведующего складом необходимо выбрать склад.";
         }
 
         return null;

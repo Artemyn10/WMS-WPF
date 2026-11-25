@@ -16,12 +16,19 @@ public class MovementService
     }
 
     /// Товары, у которых есть хотя бы один остаток больше нуля
+    /// Товары, у которых есть хотя бы один остаток больше нуля
     public async Task<List<ProductStockOption>> GetProductsWithStockAsync()
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        return await context.Inventories
-            .Where(i => i.Quantity > 0)
+        var query = context.Inventories.Where(i => i.Quantity > 0);
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(i => i.StorageLocation!.WarehouseId == scopeId);
+        }
+
+        return await query
             .Select(i => i.Product!)
             .Distinct()
             .OrderBy(p => p.Name)
@@ -34,8 +41,14 @@ public class MovementService
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        return await context.Inventories
-            .Where(i => i.ProductId == productId && i.Quantity > 0)
+        var query = context.Inventories.Where(i => i.ProductId == productId && i.Quantity > 0);
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(i => i.StorageLocation!.WarehouseId == scopeId);
+        }
+
+        return await query
             .OrderBy(i => i.StorageLocation!.Code)
             .Select(i => new SourceLocationOption
             {
@@ -134,6 +147,7 @@ public class MovementService
             ProductId = productId,
             FromLocationId = fromLocationId,
             ToLocationId = toLocationId,
+            WarehouseId = fromLocation.WarehouseId,
             Quantity = quantity,
             OperationType = OperationType.Movement,
             Date = DateTime.UtcNow

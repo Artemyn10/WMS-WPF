@@ -20,6 +20,14 @@ public class WmsDbContext : DbContext
     public DbSet<Shipment> Shipments => Set<Shipment>();
     public DbSet<ShipmentItem> ShipmentItems => Set<ShipmentItem>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<WarehouseEmployee> WarehouseEmployees => Set<WarehouseEmployee>();
+    public DbSet<WriteOff> WriteOffs => Set<WriteOff>();
+    public DbSet<WriteOffItem> WriteOffItems => Set<WriteOffItem>();
+    public DbSet<StockTaking> StockTakings => Set<StockTaking>();
+    public DbSet<StockTakingItem> StockTakingItems => Set<StockTakingItem>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
+    public DbSet<ProductFile> ProductFiles => Set<ProductFile>();
 
     public WmsDbContext(DbContextOptions<WmsDbContext> options) : base(options)
     {
@@ -158,6 +166,163 @@ public class WmsDbContext : DbContext
             .HasOne(m => m.ToLocation)
             .WithMany()
             .HasForeignKey(m => m.ToLocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        // User -> Warehouse (привязка пользователя к складу)
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Warehouse)
+            .WithMany()
+            .HasForeignKey(u => u.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // StockMovement -> Warehouse
+        modelBuilder.Entity<StockMovement>()
+            .HasOne(m => m.Warehouse)
+            .WithMany()
+            .HasForeignKey(m => m.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+        // WriteOff
+        modelBuilder.Entity<WriteOff>()
+            .HasIndex(w => w.DocumentNumber)
+            .IsUnique();
+
+        modelBuilder.Entity<WriteOff>()
+            .HasOne(w => w.Warehouse)
+            .WithMany()
+            .HasForeignKey(w => w.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WriteOff>()
+            .HasOne(w => w.CreatedBy)
+            .WithMany()
+            .HasForeignKey(w => w.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // WriteOffItem
+        modelBuilder.Entity<WriteOffItem>()
+            .HasOne(i => i.WriteOff)
+            .WithMany(w => w.Items)
+            .HasForeignKey(i => i.WriteOffId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WriteOffItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WriteOffItem>()
+            .HasOne(i => i.StorageLocation)
+            .WithMany()
+            .HasForeignKey(i => i.StorageLocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        // StockTaking
+        modelBuilder.Entity<StockTaking>()
+            .HasIndex(s => s.DocumentNumber)
+            .IsUnique();
+
+        modelBuilder.Entity<StockTaking>()
+            .HasOne(s => s.Warehouse)
+            .WithMany()
+            .HasForeignKey(s => s.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StockTaking>()
+            .HasOne(s => s.CreatedBy)
+            .WithMany()
+            .HasForeignKey(s => s.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // StockTakingItem
+        modelBuilder.Entity<StockTakingItem>()
+            .HasOne(i => i.StockTaking)
+            .WithMany(s => s.Items)
+            .HasForeignKey(i => i.StockTakingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<StockTakingItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StockTakingItem>()
+            .HasOne(i => i.StorageLocation)
+            .WithMany()
+            .HasForeignKey(i => i.StorageLocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StockTakingItem>()
+            .HasIndex(i => new { i.StockTakingId, i.ProductId, i.StorageLocationId })
+            .IsUnique();
+        // PurchaseOrder
+        modelBuilder.Entity<PurchaseOrder>()
+            .HasIndex(o => o.OrderNumber)
+            .IsUnique();
+
+        modelBuilder.Entity<PurchaseOrder>()
+            .HasOne(o => o.Supplier)
+            .WithMany()
+            .HasForeignKey(o => o.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PurchaseOrder>()
+            .HasOne(o => o.Warehouse)
+            .WithMany()
+            .HasForeignKey(o => o.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PurchaseOrder>()
+            .HasOne(o => o.CreatedBy)
+            .WithMany()
+            .HasForeignKey(o => o.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // PurchaseOrderItem
+        modelBuilder.Entity<PurchaseOrderItem>()
+            .HasOne(i => i.PurchaseOrder)
+            .WithMany(o => o.Items)
+            .HasForeignKey(i => i.PurchaseOrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PurchaseOrderItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Receipt -> PurchaseOrder
+        modelBuilder.Entity<Receipt>()
+            .HasOne(r => r.PurchaseOrder)
+            .WithMany()
+            .HasForeignKey(r => r.PurchaseOrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+        // Product: стоимость с двумя знаками после запятой
+        modelBuilder.Entity<Product>()
+            .Property(p => p.PurchasePrice)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Product>()
+            .Property(p => p.AccountingPrice)
+            .HasPrecision(18, 2);
+
+        // Product -> Supplier (основной поставщик)
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Supplier)
+            .WithMany()
+            .HasForeignKey(p => p.SupplierId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ProductFile: при удалении товара его файлы удаляются вместе с ним
+        modelBuilder.Entity<ProductFile>()
+            .HasOne(f => f.Product)
+            .WithMany(p => p.Files)
+            .HasForeignKey(f => f.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+        // Receipt -> User (кто оформил поступление)
+        modelBuilder.Entity<Receipt>()
+            .HasOne(r => r.CreatedBy)
+            .WithMany()
+            .HasForeignKey(r => r.CreatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

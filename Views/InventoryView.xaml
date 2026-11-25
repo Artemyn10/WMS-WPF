@@ -4,33 +4,93 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="8"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <TextBlock Text="Остатки" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,8">
+            <TextBlock Text="Остатки на дату"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
 
-            <TextBlock Text="Товар:" VerticalAlignment="Center" Margin="24,0,0,0"/>
-            <TextBox Width="200" Margin="8,0,0,0" Padding="4"
-                     Text="{Binding ProductSearch, UpdateSourceTrigger=PropertyChanged}"
-                     VerticalAlignment="Center"/>
+            <TextBlock Text="Дата:"
+                       Margin="24,0,0,0"
+                       VerticalAlignment="Center"/>
 
-            <TextBlock Text="Ячейка:" VerticalAlignment="Center" Margin="16,0,0,0"/>
-            <TextBox Width="140" Margin="8,0,0,0" Padding="4"
-                     Text="{Binding LocationSearch, UpdateSourceTrigger=PropertyChanged}"
-                     VerticalAlignment="Center"/>
+            <DatePicker Width="140"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Button Content="Обновить"
+                    Margin="16,0,0,0"
+                    Padding="12,4"
+                    Command="{Binding RefreshCommand}"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding InventoryRecords}"
-                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock Text="Товар:" VerticalAlignment="Center"/>
+            <TextBox Width="200"
+                     Margin="8,0,0,0"
+                     Padding="4"
+                     VerticalAlignment="Center"
+                     Text="{Binding ProductSearch, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="Ячейка:"
+                       Margin="16,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBox Width="140"
+                     Margin="8,0,0,0"
+                     Padding="4"
+                     VerticalAlignment="Center"
+                     ToolTip="Код ячейки или слово «приёмка» для товара, ожидающего размещения"
+                     Text="{Binding LocationSearch, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="3"
+                  ItemsSource="{Binding InventoryRecords}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsPending}" Value="True">
+                            <Setter Property="Background" Value="#FEF9E7"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Товар" Binding="{Binding Product.Name}" Width="*"/>
-                <DataGridTextColumn Header="Артикул" Binding="{Binding Product.Article}" Width="110"/>
-                <DataGridTextColumn Header="Склад" Binding="{Binding StorageLocation.Warehouse.Name}" Width="150"/>
-                <DataGridTextColumn Header="Ячейка" Binding="{Binding StorageLocation.Code}" Width="110"/>
-                <DataGridTextColumn Header="Количество" Binding="{Binding Quantity}" Width="110"/>
+                <DataGridTextColumn Header="Товар"
+                                    Binding="{Binding ProductName}"
+                                    Width="*"/>
+                <DataGridTextColumn Header="Артикул"
+                                    Binding="{Binding Article}"
+                                    Width="110"/>
+                <DataGridTextColumn Header="Склад"
+                                    Binding="{Binding WarehouseName}"
+                                    Width="150"/>
+                <DataGridTextColumn Header="Ячейка"
+                                    Binding="{Binding LocationCode}"
+                                    Width="120"/>
+                <DataGridTextColumn Header="Количество"
+                                    Binding="{Binding Quantity}"
+                                    Width="100"/>
+                <DataGridTextColumn Header="Состояние"
+                                    Binding="{Binding StateDisplay}"
+                                    Width="150"/>
             </DataGrid.Columns>
         </DataGrid>
+
+        <TextBlock Grid.Row="4"
+                   Text="{Binding SummaryText}"
+                   FontWeight="Bold"
+                   Margin="0,8,0,0"/>
     </Grid>
 </UserControl>

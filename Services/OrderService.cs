@@ -23,6 +23,11 @@ public class OrderService
                 .ThenInclude(i => i.Product)
             .AsQueryable();
 
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(o => o.WarehouseId == scopeId);
+        }
+
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.ToLower();
@@ -58,7 +63,10 @@ public class OrderService
         {
             return (false, validationError);
         }
-
+        if (!CurrentSession.CanAccessWarehouse(warehouseId))
+        {
+            return (false, "Нет доступа к выбранному складу.");
+        }
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         if (await context.Orders.AnyAsync(o => o.OrderNumber == orderNumber.Trim()))

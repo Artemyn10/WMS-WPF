@@ -16,17 +16,23 @@ public class PickingService
     }
 
     /// Заказы, у которых остались несобранные позиции (New или Assembling)
+    /// Заказы, у которых остались несобранные позиции (New или Assembling)
     public async Task<List<Order>> GetOrdersPendingPickingAsync()
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        return await context.Orders
+        var query = context.Orders
             .Include(o => o.Customer)
             .Include(o => o.Warehouse)
             .Where(o => (o.Status == OrderStatus.New || o.Status == OrderStatus.Assembling)
-                        && o.Items.Any(i => i.Quantity > i.PickedQuantity))
-            .OrderBy(o => o.Date)
-            .ToListAsync();
+                        && o.Items.Any(i => i.Quantity > i.PickedQuantity));
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(o => o.WarehouseId == scopeId);
+        }
+
+        return await query.OrderBy(o => o.Date).ToListAsync();
     }
 
     /// Несобранные позиции конкретного заказа
@@ -122,6 +128,7 @@ public class PickingService
             ProductId = item.ProductId,
             FromLocationId = locationId,
             ToLocationId = null,
+            WarehouseId = location.WarehouseId,
             Quantity = quantity,
             OperationType = OperationType.Picking,
             Date = DateTime.UtcNow

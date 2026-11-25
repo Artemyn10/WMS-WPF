@@ -161,6 +161,10 @@ namespace WMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal?>("AccountingPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<string>("Article")
                         .IsRequired()
                         .HasColumnType("text");
@@ -171,14 +175,30 @@ namespace WMS.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Characteristics")
+                        .HasColumnType("text");
+
                     b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ItemType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Manufacturer")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("PurchasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<int?>("ReleaseYear")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SupplierId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Unit")
@@ -192,10 +212,12 @@ namespace WMS.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("SupplierId");
+
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("WMS.Models.Receipt", b =>
+            modelBuilder.Entity("WMS.Models.ProductFile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -203,10 +225,54 @@ namespace WMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductFiles");
+                });
+
+            modelBuilder.Entity("WMS.Models.PurchaseOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DocumentNumber")
+                    b.Property<DateOnly?>("ExpectedDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("OrderNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -220,6 +286,86 @@ namespace WMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("OrderNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("PurchaseOrders");
+                });
+
+            modelBuilder.Entity("WMS.Models.PurchaseOrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PurchaseOrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReceivedQuantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseOrderId");
+
+                    b.ToTable("PurchaseOrderItems");
+                });
+
+            modelBuilder.Entity("WMS.Models.Receipt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("ArrivalDate")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("PurchaseOrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("PurchaseOrderId");
 
                     b.HasIndex("SupplierId");
 
@@ -333,6 +479,9 @@ namespace WMS.Migrations
                     b.Property<int?>("ToLocationId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("WarehouseId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FromLocationId");
@@ -341,7 +490,86 @@ namespace WMS.Migrations
 
                     b.HasIndex("ToLocationId");
 
+                    b.HasIndex("WarehouseId");
+
                     b.ToTable("StockMovements");
+                });
+
+            modelBuilder.Entity("WMS.Models.StockTaking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DocumentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("StockTakings");
+                });
+
+            modelBuilder.Entity("WMS.Models.StockTakingItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ActualQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ExpectedQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StockTakingId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StorageLocationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StorageLocationId");
+
+                    b.HasIndex("StockTakingId", "ProductId", "StorageLocationId")
+                        .IsUnique();
+
+                    b.ToTable("StockTakingItems");
                 });
 
             modelBuilder.Entity("WMS.Models.StorageLocation", b =>
@@ -408,6 +636,9 @@ namespace WMS.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsWarehouseResponsible")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("text");
@@ -419,10 +650,15 @@ namespace WMS.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("WarehouseId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Login")
                         .IsUnique();
+
+                    b.HasIndex("WarehouseId");
 
                     b.ToTable("Users");
                 });
@@ -438,13 +674,241 @@ namespace WMS.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
+                    b.Property<decimal?>("Area")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Purpose")
+                        .HasColumnType("text");
+
+                    b.Property<string>("WorkingHours")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.ToTable("Warehouses");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseEmployee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsResponsible")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("WarehouseEmployees");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseTransfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DestinationResponsibleEmployeeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DestinationResponsibleUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DestinationWarehouseId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateOnly>("PlannedDeliveryDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("SourceResponsibleEmployeeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SourceResponsibleUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SourceWarehouseId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DestinationResponsibleEmployeeId");
+
+                    b.HasIndex("DestinationResponsibleUserId");
+
+                    b.HasIndex("DestinationWarehouseId");
+
+                    b.HasIndex("DocumentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SourceResponsibleEmployeeId");
+
+                    b.HasIndex("SourceResponsibleUserId");
+
+                    b.HasIndex("SourceWarehouseId");
+
+                    b.ToTable("WarehouseTransfer");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseTransferItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DestinationStorageLocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SourceStorageLocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WarehouseTransferId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DestinationStorageLocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SourceStorageLocationId");
+
+                    b.HasIndex("WarehouseTransferId");
+
+                    b.ToTable("WarehouseTransferItem");
+                });
+
+            modelBuilder.Entity("WMS.Models.WriteOff", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DocumentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("WriteOffs");
+                });
+
+            modelBuilder.Entity("WMS.Models.WriteOffItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StorageLocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WriteOffId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StorageLocationId");
+
+                    b.HasIndex("WriteOffId");
+
+                    b.ToTable("WriteOffItems");
                 });
 
             modelBuilder.Entity("WMS.Models.Inventory", b =>
@@ -512,11 +976,84 @@ namespace WMS.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WMS.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Category");
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("WMS.Models.ProductFile", b =>
+                {
+                    b.HasOne("WMS.Models.Product", "Product")
+                        .WithMany("Files")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("WMS.Models.PurchaseOrder", b =>
+                {
+                    b.HasOne("WMS.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Supplier");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.PurchaseOrderItem", b =>
+                {
+                    b.HasOne("WMS.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.PurchaseOrder", "PurchaseOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseOrder");
                 });
 
             modelBuilder.Entity("WMS.Models.Receipt", b =>
                 {
+                    b.HasOne("WMS.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.PurchaseOrder", "PurchaseOrder")
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("WMS.Models.Supplier", "Supplier")
                         .WithMany("Receipts")
                         .HasForeignKey("SupplierId")
@@ -528,6 +1065,10 @@ namespace WMS.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("PurchaseOrder");
 
                     b.Navigation("Supplier");
 
@@ -601,11 +1142,63 @@ namespace WMS.Migrations
                         .HasForeignKey("ToLocationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("WMS.Models.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("FromLocation");
 
                     b.Navigation("Product");
 
                     b.Navigation("ToLocation");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.StockTaking", b =>
+                {
+                    b.HasOne("WMS.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.StockTakingItem", b =>
+                {
+                    b.HasOne("WMS.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.StockTaking", "StockTaking")
+                        .WithMany("Items")
+                        .HasForeignKey("StockTakingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.StorageLocation", "StorageLocation")
+                        .WithMany()
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("StockTaking");
+
+                    b.Navigation("StorageLocation");
                 });
 
             modelBuilder.Entity("WMS.Models.StorageLocation", b =>
@@ -617,6 +1210,161 @@ namespace WMS.Migrations
                         .IsRequired();
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.User", b =>
+                {
+                    b.HasOne("WMS.Models.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseEmployee", b =>
+                {
+                    b.HasOne("WMS.Models.Warehouse", "Warehouse")
+                        .WithMany("Employees")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseTransfer", b =>
+                {
+                    b.HasOne("WMS.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.WarehouseEmployee", "DestinationResponsibleEmployee")
+                        .WithMany()
+                        .HasForeignKey("DestinationResponsibleEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.User", "DestinationResponsibleUser")
+                        .WithMany()
+                        .HasForeignKey("DestinationResponsibleUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.Warehouse", "DestinationWarehouse")
+                        .WithMany("IncomingTransfers")
+                        .HasForeignKey("DestinationWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.WarehouseEmployee", "SourceResponsibleEmployee")
+                        .WithMany()
+                        .HasForeignKey("SourceResponsibleEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.User", "SourceResponsibleUser")
+                        .WithMany()
+                        .HasForeignKey("SourceResponsibleUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.Warehouse", "SourceWarehouse")
+                        .WithMany("OutgoingTransfers")
+                        .HasForeignKey("SourceWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("DestinationResponsibleEmployee");
+
+                    b.Navigation("DestinationResponsibleUser");
+
+                    b.Navigation("DestinationWarehouse");
+
+                    b.Navigation("SourceResponsibleEmployee");
+
+                    b.Navigation("SourceResponsibleUser");
+
+                    b.Navigation("SourceWarehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseTransferItem", b =>
+                {
+                    b.HasOne("WMS.Models.StorageLocation", "DestinationStorageLocation")
+                        .WithMany()
+                        .HasForeignKey("DestinationStorageLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.StorageLocation", "SourceStorageLocation")
+                        .WithMany()
+                        .HasForeignKey("SourceStorageLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.WarehouseTransfer", "Transfer")
+                        .WithMany("Items")
+                        .HasForeignKey("WarehouseTransferId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DestinationStorageLocation");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("SourceStorageLocation");
+
+                    b.Navigation("Transfer");
+                });
+
+            modelBuilder.Entity("WMS.Models.WriteOff", b =>
+                {
+                    b.HasOne("WMS.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("WMS.Models.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("WMS.Models.WriteOffItem", b =>
+                {
+                    b.HasOne("WMS.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.StorageLocation", "StorageLocation")
+                        .WithMany()
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WMS.Models.WriteOff", "WriteOff")
+                        .WithMany("Items")
+                        .HasForeignKey("WriteOffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("StorageLocation");
+
+                    b.Navigation("WriteOff");
                 });
 
             modelBuilder.Entity("WMS.Models.Category", b =>
@@ -636,7 +1384,14 @@ namespace WMS.Migrations
 
             modelBuilder.Entity("WMS.Models.Product", b =>
                 {
+                    b.Navigation("Files");
+
                     b.Navigation("InventoryRecords");
+                });
+
+            modelBuilder.Entity("WMS.Models.PurchaseOrder", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("WMS.Models.Receipt", b =>
@@ -645,6 +1400,11 @@ namespace WMS.Migrations
                 });
 
             modelBuilder.Entity("WMS.Models.Shipment", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("WMS.Models.StockTaking", b =>
                 {
                     b.Navigation("Items");
                 });
@@ -661,7 +1421,23 @@ namespace WMS.Migrations
 
             modelBuilder.Entity("WMS.Models.Warehouse", b =>
                 {
+                    b.Navigation("Employees");
+
+                    b.Navigation("IncomingTransfers");
+
+                    b.Navigation("OutgoingTransfers");
+
                     b.Navigation("StorageLocations");
+                });
+
+            modelBuilder.Entity("WMS.Models.WarehouseTransfer", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("WMS.Models.WriteOff", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

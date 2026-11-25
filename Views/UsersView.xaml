@@ -24,7 +24,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Логин" Binding="{Binding Login}" Width="130"/>
                 <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}" Width="*"/>
-                <DataGridTextColumn Header="Роль" Binding="{Binding Role}" Width="130"/>
+                <DataGridTextColumn Header="Роль" Binding="{Binding RoleDisplay}" Width="220"/>
+                <DataGridTextColumn Header="Склад" Binding="{Binding Warehouse.Name}" Width="160"/>
             </DataGrid.Columns>
         </DataGrid>
 

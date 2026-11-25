@@ -4,40 +4,55 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="8"/>
-            <RowDefinition Height="2*"/>
-            <RowDefinition Height="8"/>
+            <!-- 0: поиск и кнопка -->
             <RowDefinition Height="Auto"/>
+            <!-- 1: сообщение об успехе -->
+            <RowDefinition Height="2*"/>
+            <!-- 2: список документов -->
+            <RowDefinition Height="Auto"/>
+            <!-- 3: подпись -->
             <RowDefinition Height="1*"/>
+            <!-- 4: состав документа -->
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <TextBlock Text="Приёмка" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-            <TextBox Width="200" Margin="24,0,0,0" Padding="4"
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
+            <TextBox Width="200" Margin="24,0,0,0" Padding="4" VerticalAlignment="Center"
+                     ToolTip="Поиск по номеру документа"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
             <Button Content="Новая приёмка" Margin="16,0,0,0" Padding="12,4" Command="{Binding AddCommand}"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Receipts}"
+        <TextBlock Grid.Row="1" Text="{Binding SuccessMessage}" Foreground="Green"
+                   TextWrapping="Wrap" Margin="0,8,0,0"/>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Receipts}" Margin="0,8,0,0"
                   SelectedItem="{Binding SelectedReceipt}"
-                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Номер" Binding="{Binding DocumentNumber}" Width="110"/>
-                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=dd.MM.yyyy HH:mm}" Width="140"/>
+                <DataGridTextColumn Header="Номер" Binding="{Binding DocumentNumber}" Width="95"/>
+                <DataGridTextColumn Header="Дата поступления" Binding="{Binding ArrivalDate, StringFormat=dd.MM.yyyy}" Width="125"/>
                 <DataGridTextColumn Header="Поставщик" Binding="{Binding Supplier.Name}" Width="*"/>
-                <DataGridTextColumn Header="Склад" Binding="{Binding Warehouse.Name}" Width="150"/>
-                <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
+                <DataGridTextColumn Header="Склад" Binding="{Binding Warehouse.Name}" Width="140"/>
+                <DataGridTextColumn Header="Заказ поставщику" Binding="{Binding PurchaseOrder.OrderNumber}" Width="125"/>
+                <DataGridTextColumn Header="Позиций" Binding="{Binding ItemsCount}" Width="70"/>
+                <DataGridTextColumn Header="Всего ед." Binding="{Binding TotalQuantity}" Width="80"/>
+                <DataGridTextColumn Header="Принял" Binding="{Binding CreatedBy.FullName}" Width="160"/>
+                <DataGridTextColumn Header="Статус" Binding="{Binding StatusDisplay}" Width="110"/>
             </DataGrid.Columns>
         </DataGrid>
 
-        <TextBlock Grid.Row="4" Text="Состав выбранной приёмки" FontWeight="Bold" Margin="0,4,0,0"/>
+        <TextBlock Grid.Row="3" Text="Состав выбранной приёмки" FontWeight="Bold" Margin="0,8,0,4"/>
 
-        <DataGrid Grid.Row="5" ItemsSource="{Binding SelectedReceipt.Items}"
+        <DataGrid Grid.Row="4" ItemsSource="{Binding SelectedReceipt.Items}"
                   AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Товар" Binding="{Binding Product.Name}" Width="*"/>
                 <DataGridTextColumn Header="Артикул" Binding="{Binding Product.Article}" Width="110"/>
-                <DataGridTextColumn Header="Количество" Binding="{Binding Quantity}" Width="110"/>
+                <DataGridTextColumn Header="Принято" Binding="{Binding Quantity}" Width="90"/>
+                <DataGridTextColumn Header="Размещено" Binding="{Binding PlacedQuantity}" Width="100"/>
+                <DataGridTextColumn Header="Ожидает размещения" Binding="{Binding Remaining}" Width="150"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

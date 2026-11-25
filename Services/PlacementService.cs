@@ -20,8 +20,15 @@ public class PlacementService
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        return await context.ReceiptItems
-            .Where(i => i.Receipt!.Status == ReceiptStatus.Confirmed && i.Quantity > i.PlacedQuantity)
+        var query = context.ReceiptItems
+            .Where(i => i.Receipt!.Status == ReceiptStatus.Confirmed && i.Quantity > i.PlacedQuantity);
+
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(i => i.Receipt!.WarehouseId == scopeId);
+        }
+
+        return await query
             .OrderBy(i => i.Receipt!.Date)
             .Select(i => new PendingPlacementItem
             {
@@ -124,6 +131,7 @@ public class PlacementService
             ProductId = item.ProductId,
             FromLocationId = null,
             ToLocationId = locationId,
+            WarehouseId = location.WarehouseId,
             Quantity = quantity,
             OperationType = OperationType.Placement,
             Date = DateTime.UtcNow

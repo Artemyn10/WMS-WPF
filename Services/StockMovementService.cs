@@ -24,6 +24,11 @@ public class StockMovementService
             .Include(m => m.ToLocation)
             .AsQueryable();
 
+        if (CurrentSession.WarehouseScopeId is int scopeId)
+        {
+            query = query.Where(m => m.WarehouseId == scopeId);
+        }
+
         if (!string.IsNullOrWhiteSpace(productSearch))
         {
             var s = productSearch.ToLower();

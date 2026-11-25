@@ -1,4 +1,6 @@
-﻿namespace WMS.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WMS.Models;
 
 public class ReceiptItem
 {
@@ -12,4 +14,8 @@ public class ReceiptItem
 
     public Receipt? Receipt { get; set; }
     public Product? Product { get; set; }
+
+    // Сколько ещё ожидает размещения
+    [NotMapped]
+    public int Remaining => Quantity - PlacedQuantity;
 }

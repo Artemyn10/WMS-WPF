@@ -22,9 +22,14 @@
                   SelectedItem="{Binding SelectedWarehouse}"
                   AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="60"/>
-                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" Width="2*"/>
+                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="150"/>
+                <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" Width="200"/>
+                <DataGridTextColumn Header="Площадь, м²" Binding="{Binding Area, StringFormat='{}{0:0.##}'}" Width="100"/>
+                <DataGridTextColumn Header="Назначение" Binding="{Binding Purpose}" Width="180"/>
+                <DataGridTextColumn Header="Режим работы" Binding="{Binding WorkingHours}" Width="190"/>
+                <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="130"/>
+                <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="170"/>
+                <DataGridTextColumn Header="Ответственные" Binding="{Binding ResponsibleNames}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
 
