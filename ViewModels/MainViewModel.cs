@@ -113,6 +113,9 @@ public class MainViewModel : ViewModelBase
             () => _serviceProvider.GetRequiredService<StockMovementHistoryViewModel>());
         AddMenuItem("Пользователи", AppSection.Users,
             () => _serviceProvider.GetRequiredService<UsersViewModel>());
+        AddMenuItem("Отчётность", AppSection.Reporting,
+            () => _serviceProvider.GetRequiredService<ReportingViewModel>());
+
     }
 
     private void AddMenuItem(

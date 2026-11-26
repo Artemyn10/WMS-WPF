@@ -16,6 +16,7 @@ public enum AppSection
     InterWarehouseTransfers,
     Inventory,
     WarehouseSummary,
+    Reporting,
     Orders,
     PurchaseOrders,
     Picking,

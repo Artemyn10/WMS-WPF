@@ -74,5 +74,8 @@
         <DataTemplate DataType="{x:Type vm:PurchaseOrdersViewModel}">
             <views:PurchaseOrdersView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ReportingViewModel}">
+            <views:ReportingView/>
+        </DataTemplate>
     </Application.Resources>
 </Application>

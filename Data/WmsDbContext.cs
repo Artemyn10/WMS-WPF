@@ -28,6 +28,9 @@ public class WmsDbContext : DbContext
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
     public DbSet<ProductFile> ProductFiles => Set<ProductFile>();
+    public DbSet<WarehouseTransfer> WarehouseTransfers =>
+      Set<WarehouseTransfer>();
+
 
     public WmsDbContext(DbContextOptions<WmsDbContext> options) : base(options)
     {
@@ -36,7 +39,11 @@ public class WmsDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<WarehouseTransfer>()
+            .ToTable("WarehouseTransfer");
 
+        modelBuilder.Entity<WarehouseTransferItem>()
+            .ToTable("WarehouseTransferItem");
         // Уникальные поля
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Login)

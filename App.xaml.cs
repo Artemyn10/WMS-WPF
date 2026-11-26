@@ -121,6 +121,10 @@ public partial class App : Application
 
                 services.AddTransient<Services.MovementService>();
                 services.AddTransient<ViewModels.MovementViewModel>();
+                services.AddTransient<Services.ReportingService>();
+                services.AddTransient<ViewModels.ReportingViewModel>();
+                services.AddTransient<Services.ReportingService>();
+                services.AddTransient<ViewModels.ReportingViewModel>();
             })
             .Build();
     }
